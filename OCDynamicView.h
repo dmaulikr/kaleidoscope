@@ -1,30 +1,29 @@
 //
 //  OCDynamicView.h
-//  Kaleidoscope
+//  Dynamics
 //
-//  Created by James Carlson on 2/14/13.
+//  Created by James Carlson on 2/18/13.
 //  Copyright (c) 2013 James Carlson. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "OCDynamicalSystem.h"
+#import "OCDynamicViewReporter.h"
+
 
 @class OCViewController;
 
-// #import <QuartzCore/QuartzCore.h>
-
-@interface OCDynamicView : UIView {
-    
-    CGLayerRef layer;
-    
-    CGContextRef layerContext;
-    
-    NSTimer* timer;
-    
-}
+@interface OCDynamicView : UIView
 
 @property (assign) BOOL running;
 @property (assign) float frameRate;
 @property (assign) int frameCount;
-@property (strong, nonatomic) OCViewController *mvc;
+
+@property (strong, nonatomic) id <OCDynamicalSystem> ds;
+@property (strong, nonatomic) id <OCDynamicViewReporter> reportingViewController;
+
+- (void) initDynamicalSystem;
+- (void) clear;
+- (void) updateFrameRate: (float) f;
 
 @end
