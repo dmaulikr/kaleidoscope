@@ -7,15 +7,31 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "OCDynamicViewReporter.h"
 
 @class OCDynamicView;
+@class OCRandomShapes;  // XX //
 
-@interface OCViewController : UIViewController
+
+@interface OCViewController : UIViewController <OCDynamicViewReporter>
 
 @property(strong, nonatomic) OCDynamicView *dynamicView;
 
-@property (weak, nonatomic) IBOutlet UILabel *statusLabel;
+@property (strong, nonatomic) OCRandomShapes *ds; // XX //
 
-- (void) updateUI;
+@property (weak, nonatomic) IBOutlet UILabel *statusLabel, *frameRateLabel;
+
+@property (weak, nonatomic) IBOutlet UIButton *startStopButton, *clearButton, *plusButton, *minusButton;
+
+
+-(IBAction)startStop:(id)sender;
+
+-(IBAction)clear:(id)sender;
+
+-(IBAction)increaseFrameRate:(id)sender;
+
+-(IBAction)decreaseFrameRate:(id)sender;
+
+- (void) updateStatusOfDynamicView;
 
 @end
