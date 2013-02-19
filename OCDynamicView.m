@@ -9,29 +9,34 @@
 #import "OCDynamicView.h"
 #import "OCViewController.h"
 
-float urandom() {
-    // return random number in [0,1]
-    
-    return arc4random_uniform(1028)/1028.0;
-}
+typedef enum {should_clear, was_cleared} clearState;
+
 
 @implementation OCDynamicView {
     
-
+    CGLayerRef layer;
+    
+    CGContextRef layerContext;
+    
+    NSTimer* timer;
+    
+    clearState clear_state;
+    
 }
 
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-        
+    
     if (self) {
-      
+        
         // Set up layer and layerContext for off-screen drawing.
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGSize layerSize = self.frame.size;
         layer = CGLayerCreateWithContext(ctx, layerSize, NULL);
         layerContext = CGLayerGetContext(layer);
+        clear_state = was_cleared;
         
     }
     
@@ -41,93 +46,80 @@ float urandom() {
     return self;
 }
 
+- (void) initDynamicalSystem {
+    
+    [self.ds configureFrameHeight:self.frame.size.height];
+    [self.ds configureFrameWidth:self.frame.size.width];
+    [self.ds initState];
+}
 
 - (void)drawRect:(CGRect)rect
 {
     
-    // Draw into layer
-    [self randomTriangle:layerContext];
+    if (clear_state == was_cleared) {
+        
+        // If we are not clearing the drawing, then
+        // update dynamical system and have it draw into layer
+        [self.ds updateState];
+        [self.ds drawFrame:layerContext];
+    }
     
     // Transfer layer to current graphics context
     CGContextRef uictx = UIGraphicsGetCurrentContext();
     CGPoint pt = CGPointMake(0.0, 0.0);
     CGContextDrawLayerAtPoint(uictx, pt, layer);
-
+    
+    if (clear_state == should_clear) {
+        clear_state = was_cleared;
+    }
+    
 }
 
 - (void)tick
 {
     // Tell the view that it needs to re-draw itself
     
-    if (self.running) {  // Go!
+    if (self.running || clear_state == should_clear) {  // Go!
         [self setNeedsDisplay];
         self.frameCount++;
-        [self.mvc updateUI];
+        [self.reportingViewController updateStatusOfDynamicView];
     }
 }
 
 - (void) updateTimer {
+    
     // Throw away old timer
     if (timer) {
-        NSLog(@"updateTimer:INVALIDATE TIMER:");
         [timer invalidate];
-        NSLog(@"TIMER = nil:");
         timer = nil;
-        // NSLog(@"TIMER release:");
-        // [timer release];
     }
     
+    // set up new timer with new frame rate
     float delay = 1.0/self.frameRate;
     timer = [NSTimer scheduledTimerWithTimeInterval:(delay)
                                              target:self selector:@selector(tick)
                                            userInfo:nil repeats:YES];
-    NSLog(@"TIMER UPDATED");
 }
 
-- (void) randomTriangle: (CGContextRef) c {
-    // Draw random triangle with random fill color.
+- (void) clear {
     
-    // Set random fill color to paint triangle.
-    CGContextSetRGBFillColor(c, urandom(), urandom(), urandom(), 0.5);
+    // Set things up to clear screen (fill with black) the next time
+    // that drawRect is called. Here clear_state is set to should_clear.
+    // After drawRect fills the screen with black, clear_state is set
+    // back to was_cleared
     
-    // "Center" of triangle
-    float xx = urandom()*self.frame.size.width;
-    float yy = urandom()*self.frame.size.height;
-   
-    // Size of triangle:
-    float d = urandom()*150;
-    // Vertices of triangle:
-    float x1 = IRandom(-d,d) + xx;
-    float y1 = IRandom(-d,d) + yy;
-    float x2 = IRandom(-d,d) + xx;
-    float y2 = IRandom(-d,d) + yy;
-    float x3 = IRandom(-d,d) + xx;
-    float y3 = IRandom(-d,d) + yy;
-    
-    // Construct path for triangle
-    CGMutablePathRef trianglePath = CGPathCreateMutable();
-  CGPathMoveToPoint(trianglePath, NULL, x1, y1);
-	CGPathAddLineToPoint(trianglePath, NULL, x2, y2);
-	CGPathAddLineToPoint(trianglePath, NULL, x3, y3);
-    CGPathCloseSubpath(trianglePath);
-    CGContextAddPath(c, trianglePath);
-	CGContextFillPath(c);
-
-    
+    CGContextSetRGBFillColor(layerContext, 0, 0, 0, 1.0);
+    CGRect rect = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    CGContextFillRect(layerContext, rect);
+    [self.ds initState];
+    clear_state = should_clear;
+    self.frameCount = -1;
 }
 
-
-// As in Processing, map a from the interval [a,b] affinely to the interval [c,d]
-float map( float x, float a, float b, float c, float d) {
-    float u = (x-a)/(b-a); // u is in [0,1] if x is in [a,b]
-    float v = (d-c)*u + c;
-    return v;
+- (void) updateFrameRate: (float) f {
+    
+    self.frameRate = f;
+    [self updateTimer];
 }
-
-// return random number interval [a,b]
-float IRandom(float a, float b) {
-    return map(urandom(), 0, 1, a, b);
-}
-
 
 @end
