@@ -1,7 +1,7 @@
 kaleidoscope
 ============
 
-Kaleidoscope: generate and display random triangles with random colors at user-defined "frame rate." 
+Kaleidoscope (objective-c): generate and display random triangles with random colors at user-defined "frame rate." 
 Default is 10 frames/sec.  See 
 
   http://square-the-circle.com/2013/02/14/kaleidoscope/
