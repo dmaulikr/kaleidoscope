@@ -21,3 +21,5 @@ Example: Classes implementing the OCDynamicalSystem protocol are OCRandomTriangl
 stateless, and OCBrownianMotion, for which the state is (x,y), the current partivle position.
 These classes can be "dropped in" and wired to the OCViewController with changes in only 
 four lines of code.  We will discuss this more fully later.
+
+NOTE:  After running for a while (about 10,000 steps), the app crashes.  Haven't yet investigate.  Yuuk!
