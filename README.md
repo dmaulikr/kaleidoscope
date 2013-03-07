@@ -23,3 +23,4 @@ These classes can be "dropped in" and wired to the OCViewController with changes
 four lines of code.  We will discuss this more fully later.
 
 NOTE:  After running for a while (about 10,000 steps), the app crashes.  Haven't yet investigate.  Yuuk!
+If anyone has a suggestion as to what the trouble is, I would be most grateful.
